@@ -1,0 +1,21 @@
+# Виртуальное окружение
+venv/
+.venv/
+
+# База данных SQLite
+db.sqlite3
+
+# Python кэш
+__pycache__/
+*.pyc
+*.pyo
+
+# Переменные окружения (секреты!)
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# Docker
+docker-compose.override.yml

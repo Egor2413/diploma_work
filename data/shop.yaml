@@ -1,0 +1,22 @@
+shop:
+  name: "Тестовый Магазин"
+  url: "https://example.com"
+categories:
+  - id: 1
+    name: "Смартфоны"
+  - id: 2
+    name: "Ноутбуки"
+products:
+  - id: 101
+    name: "iPhone 18"
+    price: 150000
+    quantity: 5
+    category: 1
+    specifications:
+      color: "Black"
+      memory: "128GB"
+  - id: 102
+    name: "MacBook Air"
+    price: 120000
+    quantity: 3
+    category: 2

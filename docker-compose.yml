@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # 1. Брокер сообщений (Redis)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # 2. Веб-приложение Django
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings
+
+  # 3. Воркер Celery (выполняет фоновые задачи)
+  celery:
+    build: .
+    command: celery -A config worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - web
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings
