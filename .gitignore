@@ -18,4 +18,4 @@ __pycache__/
 .vscode/
 
 # Docker
-docker-compose.override.yml
+docker-compose.override.ymllogs/

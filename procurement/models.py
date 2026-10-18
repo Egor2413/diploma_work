@@ -1,19 +1,21 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class User(AbstractUser):
     """Модель пользователя (Клиент или Поставщик)."""
+
     phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="Телефон")
 
     class Meta:
-        db_table = 'users'
+        db_table = "users"
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
 
 
 class Supplier(models.Model):
     """Модель поставщика."""
+
     name = models.CharField(max_length=255, verbose_name="Название поставщика")
     url = models.URLField(blank=True, null=True, verbose_name="Сайт поставщика")
     is_active = models.BooleanField(default=True, verbose_name="Принимает заказы")
@@ -28,6 +30,7 @@ class Supplier(models.Model):
 
 class Category(models.Model):
     """Категории товаров."""
+
     name = models.CharField(max_length=255, unique=True, verbose_name="Название категории")
 
     def __str__(self):
@@ -40,9 +43,10 @@ class Category(models.Model):
 
 class Product(models.Model):
     """Модель товара."""
+
     name = models.CharField(max_length=255, verbose_name="Название товара")
-    category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE, verbose_name="Категория")
-    supplier = models.ForeignKey(Supplier, related_name='products', on_delete=models.CASCADE, verbose_name="Поставщик")
+    category = models.ForeignKey(Category, related_name="products", on_delete=models.CASCADE, verbose_name="Категория")
+    supplier = models.ForeignKey(Supplier, related_name="products", on_delete=models.CASCADE, verbose_name="Поставщик")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")
     quantity = models.PositiveIntegerField(default=0, verbose_name="Количество на складе")
     description = models.TextField(blank=True, null=True, verbose_name="Описание")
@@ -56,12 +60,13 @@ class Product(models.Model):
     class Meta:
         verbose_name = "Товар"
         verbose_name_plural = "Товары"
-        unique_together = ('name', 'supplier')
+        unique_together = ("name", "supplier")
 
 
 class Cart(models.Model):
     """Корзина пользователя."""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cart")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -71,7 +76,8 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     """Товар внутри корзины."""
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 
@@ -85,16 +91,17 @@ class CartItem(models.Model):
 
 class Order(models.Model):
     """Заказ."""
+
     STATUS_CHOICES = [
-        ('NEW', 'Новый'),
-        ('PROCESSING', 'В обработке'),
-        ('SHIPPED', 'Отправлен'),
-        ('DELIVERED', 'Доставлен'),
-        ('CANCELLED', 'Отменен'),
+        ("NEW", "Новый"),
+        ("PROCESSING", "В обработке"),
+        ("SHIPPED", "Отправлен"),
+        ("DELIVERED", "Доставлен"),
+        ("CANCELLED", "Отменен"),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='NEW')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="NEW")
     address = models.TextField(verbose_name="Адрес доставки")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -105,7 +112,8 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     """Товар внутри заказа."""
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)  # Цена фиксируется на момент заказа

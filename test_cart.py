@@ -5,15 +5,12 @@ BASE_URL = "http://127.0.0.1:8000"
 # Вставьте сюда ваш ПОСЛЕДНИЙ access токен:
 TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkxMzcxMjk3LCJpYXQiOjE3OTEzNjc2OTcsImp0aSI6IjVjOTcxZDhlMmI3ZDQ3ZDA4MGMyYzhiNDcwYWNhNTFmIiwidXNlcl9pZCI6IjEifQ.Sknh9YkscBAihEVLA-9cUc2ZG4QVxBjA1EUn3FMxiso"
 
-headers = {
-    "Authorization": f"Bearer {TOKEN}",
-    "Content-Type": "application/json"
-}
+headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
 
 # Отключаем прокси для локальных запросов
 proxies = {
-    'http': None,
-    'https': None,
+    "http": None,
+    "https": None,
 }
 
 
@@ -23,9 +20,9 @@ def test_api():
     r = requests.get(f"{BASE_URL}/api/products/", headers=headers, proxies=proxies)
 
     if r.status_code == 200:
-        products = r.json()['results']
+        products = r.json()["results"]
         if products:
-            product_id = products[0]['id']
+            product_id = products[0]["id"]
             print(f"✅ Найден товар ID: {product_id} - {products[0]['name']}")
         else:
             print("⚠️ Товаров нет в базе!")

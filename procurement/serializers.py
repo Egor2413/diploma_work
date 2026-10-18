@@ -1,13 +1,13 @@
-from rest_framework import serializers
-from .models import User, Supplier, Category, Product
 from django.contrib.auth.password_validation import validate_password
-from .models import Cart, CartItem, Order, OrderItem
+from rest_framework import serializers
+
+from .models import Cart, CartItem, Category, Order, OrderItem, Product, Supplier, User
 
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = '__all__'
+        fields = "__all__"
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -15,13 +15,13 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ['id', 'name', 'products']
+        fields = ["id", "name", "products"]
 
 
 class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
-        fields = '__all__'
+        fields = "__all__"
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -30,15 +30,15 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'password_confirm', 'phone')
+        fields = ("username", "email", "password", "password_confirm", "phone")
 
     def validate(self, attrs):
-        if attrs['password'] != attrs['password_confirm']:
+        if attrs["password"] != attrs["password_confirm"]:
             raise serializers.ValidationError({"password": "Пароли не совпадают."})
         return attrs
 
     def create(self, validated_data):
-        validated_data.pop('password_confirm')
+        validated_data.pop("password_confirm")
         user = User.objects.create_user(**validated_data)
         return user
 
@@ -49,7 +49,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartItem
-        fields = ['id', 'product', 'quantity', 'total_price']
+        fields = ["id", "product", "quantity", "total_price"]
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -58,7 +58,7 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = ['id', 'items', 'total_amount']
+        fields = ["id", "items", "total_amount"]
 
     def get_total_amount(self, obj):
         return sum(item.total_price for item in obj.items.all())
@@ -69,7 +69,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'quantity', 'price']
+        fields = ["id", "product", "quantity", "price"]
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -78,4 +78,4 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'status', 'address', 'created_at', 'items']
+        fields = ["id", "user", "status", "address", "created_at", "items"]

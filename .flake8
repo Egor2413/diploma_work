@@ -1,0 +1,12 @@
+cat > .flake8 << EOF
+[flake8]
+max-line-length = 120
+exclude = 
+    .venv,
+    venv,
+    migrations,
+    manage.py,
+    config/settings.py,
+    .env.py
+ignore = E501, W503, E203
+EOF
