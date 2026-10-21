@@ -151,7 +151,7 @@ CACHES = {
 # Время кэширования по умолчанию (в секундах)
 CACHE_TTL = 60 * 5
 
-LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+LOGS_DIR = os.path.join(BASE_DIR, "logs")
 os.makedirs(LOGS_DIR, exist_ok=True)
 
 LOGGING = {
@@ -170,7 +170,7 @@ LOGGING = {
         },
         "file": {
             "class": "logging.FileHandler",
-            'filename': os.path.join(LOGS_DIR, 'django.log'),
+            "filename": os.path.join(LOGS_DIR, "django.log"),
             "formatter": "verbose",
         },
     },
