@@ -26,7 +26,7 @@ jobs:
           pip install flake8 black isort
 
       - name: Check code formatting with Black
-        run: black --check --exclude '.env.py' .
+        run: black --check --exclude '(\.venv|venv|migrations|\.env\.py)' .
 
       - name: Check import sorting with isort
         run: isort --check-only .

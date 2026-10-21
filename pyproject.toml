@@ -1,22 +1,7 @@
 [tool.black]
 line-length = 120
 target-version = ['py310']
-exclude = '''
-/(
-    \.venv
-  | venv
-  | \.git
-  | __pycache__
-  | migrations
-  | \.env\.py
-)/
-'''
 
 [tool.isort]
 profile = "black"
 line_length = 120
-<<<<<<< Updated upstream
-skip = [".env.py", ".venv", "venv", "migrations"]
-=======
-skip = [".env.py", ".venv", "venv", "migrations"]
->>>>>>> Stashed changes
