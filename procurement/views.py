@@ -154,16 +154,28 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         # Отправка email
         items_str = ", ".join(order_items_data)
+
+        # 1. Письмо клиенту
+        client_msg = (
+            f"Здравствуйте, {request.user.username}!\n"
+            f"Ваш заказ на сумму {total_amount} руб. принят.\n"
+            f"Адрес: {address}\nТовары: {items_str}"
+        )
         send_email.delay(
             subject=f"Заказ #{order.id} принят!",
-            message=f"Здравствуйте, {request.user.username}!\nВаш заказ на сумму {total_amount} руб. принят.\nАдрес: {address}\nТовары: {items_str}",
+            message=client_msg,
             recipient_list=[request.user.email],
         )
         logger.info(f"Задача отправки email клиенту для заказа #{order.id} поставлена в очередь")
 
+        # 2. Письмо администратору
+        admin_msg = (
+            f"Новый заказ!\nКлиент: {request.user.username}\n"
+            f"Сумма: {total_amount}\nАдрес: {address}\nТовары:\n{items_str}"
+        )
         send_email.delay(
             subject=f"Новый заказ #{order.id} от {request.user.username}",
-            message=f"Новый заказ!\nКлиент: {request.user.username}\nСумма: {total_amount}\nАдрес: {address}\nТовары:\n{items_str}",
+            message=admin_msg,
             recipient_list=["admin@example.com"],
         )
         logger.info(f"Задача отправки email админу для заказа #{order.id} поставлена в очередь")
