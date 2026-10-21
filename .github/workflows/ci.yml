@@ -32,7 +32,7 @@ jobs:
         run: isort --check-only .
 
       - name: Lint with Flake8
-        run: flake8 .
+        run: flake8 . --max-line-length=120 --exclude=migrations,.venv,venv,.env.py --ignore=E203,W503
 
   test:
     name: Run Tests

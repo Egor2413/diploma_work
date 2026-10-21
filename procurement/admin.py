@@ -5,7 +5,7 @@ from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import path
 
-from procurement.models import Category, Order, OrderItem, Product, Supplier
+from procurement.models import Product
 from procurement.tasks import do_import
 
 
