@@ -75,7 +75,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     user = serializers.StringRelatedField(read_only=True)
+    supplier = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = Order
-        fields = ["id", "user", "status", "address", "created_at", "items"]
+        fields = ["id", "user", "supplier", "status", "address", "created_at", "items"]

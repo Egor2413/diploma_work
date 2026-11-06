@@ -1,0 +1,198 @@
+ERROR 2026-11-06 17:13:05,490 log Internal Server Error: /api/register/
+Traceback (most recent call last):
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/django/core/handlers/base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/django/views/decorators/csrf.py", line 64, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/rest_framework/views.py", line 526, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/rest_framework/views.py", line 474, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/rest_framework/views.py", line 485, in raise_uncaught_exception
+    raise exc
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/rest_framework/views.py", line 523, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/rest_framework/generics.py", line 194, in post
+    return self.create(request, *args, **kwargs)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/procurement/views.py", line 80, in create
+    send_email.delay(
+    ~~~~~~~~~~~~~~~~^
+        subject="Добро пожаловать в Procurement Service!",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+        recipient_list=[user.email],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/celery/app/task.py", line 463, in delay
+    return self.apply_async(args, kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/celery/app/task.py", line 627, in apply_async
+    return app.send_task(
+           ~~~~~~~~~~~~~^
+        self.name, args, kwargs, task_id=task_id, producer=producer,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        **options
+        ^^^^^^^^^
+    )
+    ^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/celery/app/base.py", line 969, in send_task
+    amqp.send_task_message(P, name, message, **options)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/celery/app/amqp.py", line 559, in send_task_message
+    ret = producer.publish(
+        body,
+    ...<8 lines>...
+        **properties
+    )
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/messaging.py", line 190, in publish
+    return _publish(
+        body, priority, content_type, content_encoding,
+        headers, properties, routing_key, mandatory, immediate,
+        exchange_name, declare, timeout, confirm_timeout, retry, retry_policy
+    )
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/connection.py", line 558, in _ensured
+    return fun(*args, **kwargs)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/messaging.py", line 208, in _publish
+    maybe_declare(entity, retry=retry, **retry_policy)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/messaging.py", line 107, in maybe_declare
+    return maybe_declare(entity, self.channel, retry, **retry_policy)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/common.py", line 112, in maybe_declare
+    return _imaybe_declare(entity, channel, **retry_policy)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/common.py", line 169, in _imaybe_declare
+    return entity.channel.connection.client.ensure(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        entity, _maybe_declare, **retry_policy)(entity, channel)
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/connection.py", line 558, in _ensured
+    return fun(*args, **kwargs)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/common.py", line 155, in _maybe_declare
+    entity.declare(channel=channel)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/entity.py", line 617, in declare
+    self._create_queue(nowait=nowait, channel=channel)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/entity.py", line 626, in _create_queue
+    self.queue_declare(nowait=nowait, passive=False, channel=channel)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/entity.py", line 655, in queue_declare
+    ret = channel.queue_declare(
+        queue=self.name,
+    ...<5 lines>...
+        nowait=nowait,
+    )
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/transport/virtual/base.py", line 538, in queue_declare
+    return queue_declare_ok_t(queue, self._size(queue), 0)
+                                     ~~~~~~~~~~^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/transport/filesystem.py", line 295, in _size
+    folder = os.listdir(self.data_folder_in)
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/celery_in'
+ERROR 2026-11-06 17:13:05,695 log Internal Server Error: /api/register/
+Traceback (most recent call last):
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/django/core/handlers/base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/django/views/decorators/csrf.py", line 64, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/rest_framework/views.py", line 526, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/rest_framework/views.py", line 474, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/rest_framework/views.py", line 485, in raise_uncaught_exception
+    raise exc
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/rest_framework/views.py", line 523, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/rest_framework/generics.py", line 194, in post
+    return self.create(request, *args, **kwargs)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/procurement/views.py", line 80, in create
+    send_email.delay(
+    ~~~~~~~~~~~~~~~~^
+        subject="Добро пожаловать в Procurement Service!",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+        recipient_list=[user.email],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/celery/app/task.py", line 463, in delay
+    return self.apply_async(args, kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/celery/app/task.py", line 627, in apply_async
+    return app.send_task(
+           ~~~~~~~~~~~~~^
+        self.name, args, kwargs, task_id=task_id, producer=producer,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        **options
+        ^^^^^^^^^
+    )
+    ^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/celery/app/base.py", line 969, in send_task
+    amqp.send_task_message(P, name, message, **options)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/celery/app/amqp.py", line 559, in send_task_message
+    ret = producer.publish(
+        body,
+    ...<8 lines>...
+        **properties
+    )
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/messaging.py", line 190, in publish
+    return _publish(
+        body, priority, content_type, content_encoding,
+        headers, properties, routing_key, mandatory, immediate,
+        exchange_name, declare, timeout, confirm_timeout, retry, retry_policy
+    )
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/connection.py", line 558, in _ensured
+    return fun(*args, **kwargs)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/messaging.py", line 208, in _publish
+    maybe_declare(entity, retry=retry, **retry_policy)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/messaging.py", line 107, in maybe_declare
+    return maybe_declare(entity, self.channel, retry, **retry_policy)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/common.py", line 112, in maybe_declare
+    return _imaybe_declare(entity, channel, **retry_policy)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/common.py", line 169, in _imaybe_declare
+    return entity.channel.connection.client.ensure(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        entity, _maybe_declare, **retry_policy)(entity, channel)
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/connection.py", line 558, in _ensured
+    return fun(*args, **kwargs)
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/common.py", line 155, in _maybe_declare
+    entity.declare(channel=channel)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/entity.py", line 617, in declare
+    self._create_queue(nowait=nowait, channel=channel)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/entity.py", line 626, in _create_queue
+    self.queue_declare(nowait=nowait, passive=False, channel=channel)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/entity.py", line 655, in queue_declare
+    ret = channel.queue_declare(
+        queue=self.name,
+    ...<5 lines>...
+        nowait=nowait,
+    )
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/transport/virtual/base.py", line 538, in queue_declare
+    return queue_declare_ok_t(queue, self._size(queue), 0)
+                                     ~~~~~~~~~~^^^^^^^
+  File "/Users/egor/Desktop/pyt/diplowa_work/.venv/lib/python3.14/site-packages/kombu/transport/filesystem.py", line 295, in _size
+    folder = os.listdir(self.data_folder_in)
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/celery_in'
+INFO 2026-11-06 17:26:52,999 tasks Email успешно отправлен: Добро пожаловать в Procurement Service! -> ['token@test.com']
+INFO 2026-11-06 17:26:53,383 tasks Email успешно отправлен: Добро пожаловать в Procurement Service! -> ['test@test.com']

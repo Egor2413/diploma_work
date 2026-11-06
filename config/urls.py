@@ -8,6 +8,8 @@ from procurement.views import (
     CartViewSet,
     CategoryViewSet,
     OrderViewSet,
+    PasswordResetConfirmView,
+    PasswordResetRequestView,
     ProductViewSet,
     RegisterView,
     RunImportView,
@@ -34,4 +36,7 @@ urlpatterns = [
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/admin/run-import/", RunImportView.as_view(), name="run-import"),
     path("api/health/", health_check, name="health-check"),
+    # Восстановление пароля
+    path("api/auth/password-reset/", PasswordResetRequestView.as_view(), name="password-reset"),
+    path("api/auth/password-reset/confirm/", PasswordResetConfirmView.as_view(), name="password-reset-confirm"),
 ]

@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+import sys
 
 from dotenv import load_dotenv
 
@@ -187,3 +188,7 @@ LOGGING = {
         },
     },
 }
+
+TESTING = "test" in sys.argv or "pytest" in sys.modules
+CELERY_TASK_ALWAYS_EAGER = TESTING
+CELERY_TASK_EAGER_PROPAGATES = TESTING

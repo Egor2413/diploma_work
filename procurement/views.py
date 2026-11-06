@@ -2,9 +2,13 @@ import logging
 import os
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.db import connection
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status, viewsets
@@ -45,7 +49,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().order_by("id")
     serializer_class = CategorySerializer
     permission_classes = [permissions.AllowAny]
 
@@ -72,8 +76,23 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+
+        try:
+            send_email.delay(
+                subject="Добро пожаловать в Procurement Service!",
+                message=(
+                    f"Здравствуйте, {user.username}!\n"
+                    f"Ваша регистрация успешно завершена.\n"
+                    f"Теперь вы можете оформлять заказы."
+                ),
+                recipient_list=[user.email],
+            )
+        except Exception as exc:
+            logger.error(f"Не удалось поставить письмо в очередь: {exc}")
+
         return Response(
-            {"message": "Пользователь успешно зарегистрирован", "user_id": user.id}, status=status.HTTP_201_CREATED
+            {"message": "Пользователь успешно зарегистрирован. Проверьте вашу почту.", "user_id": user.id},
+            status=status.HTTP_201_CREATED,
         )
 
 
@@ -134,53 +153,82 @@ class OrderViewSet(viewsets.ModelViewSet):
         if not address:
             return Response({"error": "Укажите адрес доставки"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Создаем заказ
-        order = Order.objects.create(user=request.user, address=address)
+        # 1. Группируем товары корзины по поставщикам
+        from collections import defaultdict
 
-        total_amount = 0
-        order_items_data = []
-
+        supplier_items = defaultdict(list)
         for item in cart.items.all():
-            OrderItem.objects.create(
-                order=order, product=item.product, quantity=item.quantity, price=item.product.price
-            )
-            total_amount += item.total_price
-            order_items_data.append(f"{item.product.name} x {item.quantity}")
+            supplier_items[item.product.supplier].append(item)
 
+        created_orders = []
+        total_amount_all = 0
+
+        # 2. Создаем ОТДЕЛЬНЫЙ заказ для каждого поставщика
+        for supplier, items in supplier_items.items():
+            order = Order.objects.create(user=request.user, supplier=supplier, address=address)
+
+            order_total = 0
+            invoice_lines = []
+
+            for item in items:
+                OrderItem.objects.create(
+                    order=order, product=item.product, quantity=item.quantity, price=item.product.price
+                )
+                order_total += item.total_price
+                invoice_lines.append(
+                    invoice_lines.append(
+                        f"• {item.product.name} | Кол-во: {item.quantity} | "
+                        f"Цена: {item.product.price} руб. | Сумма: {item.total_price} руб."
+                    )
+                )
+
+            total_amount_all += order_total
+            created_orders.append(order)
+
+            # 3. Формируем накладную
+            invoice_text = (
+                f"=== НАКЛАДНАЯ №{order.id} ===\n"
+                f"Дата: {order.created_at.strftime('%d.%m.%Y %H:%M')}\n"
+                f"Поставщик: {supplier.name}\n"
+                f"Получатель: {request.user.username}\n"
+                f"Адрес доставки: {address}\n"
+                f"{'=' * 40}\n"
+                f"СПИСОК ТОВАРОВ:\n" + "\n".join(invoice_lines) + f"\n"
+                f"{'=' * 40}\n"
+                f"ИТОГО К ОТГРУЗКЕ: {order_total} руб.\n"
+                f"Статус: Ожидает исполнения\n"
+            )
+
+            # 4. Отправляем накладную ПОСТАВЩИКУ (или админу, если у поставщика нет email)
+            supplier_email = supplier.email or "admin@example.com"
+            send_email.delay(
+                subject=f"Новая накладная №{order.id} для исполнения",
+                message=invoice_text,
+                recipient_list=[supplier_email],
+            )
+            logger.info(f"Накладная №{order.id} отправлена поставщику {supplier.name} на {supplier_email}")
+
+        # 5. Очищаем корзину
         cart.items.all().delete()
 
-        # Логирование успешного заказа
-        logger.info(f"Создан заказ #{order.id}: user={request.user.username}, amount={total_amount}, address={address}")
-
-        # Отправка email
-        items_str = ", ".join(order_items_data)
-
-        # 1. Письмо клиенту
+        # 6. Сводное письмо клиенту
         client_msg = (
             f"Здравствуйте, {request.user.username}!\n"
-            f"Ваш заказ на сумму {total_amount} руб. принят.\n"
-            f"Адрес: {address}\nТовары: {items_str}"
+            f"Ваш заказ на общую сумму {total_amount_all} руб. принят в обработку.\n"
+            f"Заказ разделен на {len(created_orders)} поставки по разным поставщикам.\n"
+            f"Адрес доставки: {address}"
         )
         send_email.delay(
-            subject=f"Заказ #{order.id} принят!",
+            subject=f"Заказ принят! (Разделен на {len(created_orders)} поставки)",
             message=client_msg,
             recipient_list=[request.user.email],
         )
-        logger.info(f"Задача отправки email клиенту для заказа #{order.id} поставлена в очередь")
-
-        # 2. Письмо администратору
-        admin_msg = (
-            f"Новый заказ!\nКлиент: {request.user.username}\n"
-            f"Сумма: {total_amount}\nАдрес: {address}\nТовары:\n{items_str}"
+        logger.info(
+            f"Создано {len(created_orders)} заказов для user={request.user.username} на сумму {total_amount_all}"
         )
-        send_email.delay(
-            subject=f"Новый заказ #{order.id} от {request.user.username}",
-            message=admin_msg,
-            recipient_list=["admin@example.com"],
-        )
-        logger.info(f"Задача отправки email админу для заказа #{order.id} поставлена в очередь")
 
-        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+        # 7. Возвращаем данные всех созданных заказов
+        return Response(OrderSerializer(created_orders, many=True).data, status=status.HTTP_201_CREATED)
 
 
 class RunImportView(generics.GenericAPIView):
@@ -228,3 +276,68 @@ def health_check(request):
         return JsonResponse(status_data, status=500)
 
     return JsonResponse(status_data)
+
+
+User = get_user_model()
+
+
+class PasswordResetRequestView(generics.GenericAPIView):
+    """Запрос на сброс пароля (отправка email со ссылкой)"""
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get("email")
+        if not email:
+            return Response({"error": "Email обязателен"}, status=status.HTTP_400_BAD_REQUEST)
+
+        users = User.objects.filter(email=email)
+        if users.exists():
+            user = users.first()
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            reset_link = f"http://127.0.0.1:8000/api/auth/password-reset/confirm/?uid={uid}&token={token}"
+
+            send_email.delay(
+                subject="Восстановление пароля",
+                message=(
+                    f"Здравствуйте, {user.username}!\n"
+                    f"Для сброса пароля перейдите по ссылке:\n{reset_link}\n"
+                    f"Если вы не запрашивали сброс, проигнорируйте это письмо."
+                ),
+                recipient_list=[user.email],
+            )
+            logger.info(f"Отправлена ссылка для сброса пароля пользователю {user.username}")
+
+        return Response(
+            {"message": "Если пользователь с таким email существует, инструкция отправлена."}, status=status.HTTP_200_OK
+        )
+
+
+class PasswordResetConfirmView(generics.GenericAPIView):
+    """Подтверждение сброса пароля и установка нового"""
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        uid = request.data.get("uid")
+        token = request.data.get("token")
+        new_password = request.data.get("new_password")
+
+        if not all([uid, token, new_password]):
+            return Response({"error": "uid, token и new_password обязательны"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user_id = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=user_id)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({"error": "Неверная ссылка"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if default_token_generator.check_token(user, token):
+            user.set_password(new_password)
+            user.save()
+            logger.info(f"Пароль успешно сброшен для пользователя {user.username}")
+            return Response({"message": "Пароль успешно изменен."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Неверный или просроченный токен"}, status=status.HTTP_400_BAD_REQUEST)
